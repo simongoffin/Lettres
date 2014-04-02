@@ -9,13 +9,14 @@ f.close()
 conn = sqlite3.connect('dico.db')
 print "Opened database successfully";
 c = conn.cursor()
-c.execute('''create table Mots(Id integer primary key autoincrement, Mot varchar(26));''')
+c.execute('''create table Mots(Mot varchar(26) primary key);''')
 print "Table created successfully";
 
 
 
+doublons=set(lignes)
+for ligne in doublons:
 
-for ligne in lignes:
     c.execute("insert into Mots (Mot) values ("+"\'"+ligne+"\'"+")");
     
 print "Records created successfully";
