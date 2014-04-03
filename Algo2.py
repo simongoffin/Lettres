@@ -3,7 +3,7 @@
 import sys
 import os
 import time
-import sqlite3
+import pickle
 
 root = os.path.dirname(__file__)
 rel_path = os.path.join("", "aima-python")
@@ -14,9 +14,8 @@ from search import *
 class LettresProblem(Problem):
 
 
-    def __init__(self,init,connexion):
-        self.conn=connexion
-        self.c = self.conn.cursor()
+    def __init__(self,init,words):
+        self.w=words
         self.dico={}
         self.symetrie=0
         self.solution=''
@@ -35,7 +34,7 @@ class LettresProblem(Problem):
                 if len(valeur2)==1:
                     if not valeur1+valeur2 in self.dico:
                         self.dico[valeur1+valeur2]=1
-                        check=possible(valeur1,valeur2,self.c)
+                        check=possible(valeur1,valeur2,self.w)
                         self.symetrie+=1
                         if check[0]:
                             newmove=temp[:]
@@ -48,22 +47,23 @@ class LettresProblem(Problem):
                             yield (etape,newmove)
                         else: continue
                     
-def possible(valeur1,valeur2,c):
-    c.execute("SELECT * FROM Mots where Mot like "+"\'"+valeur1+valeur2+"%"+"\'"+" LIMIT 1;")
-    r=c.fetchall()
-    if len(r)>0:
-        c.execute("SELECT * FROM Mots where Mot like "+"\'"+valeur1+valeur2+"\'"+";")
-        mot=c.fetchall()
-        if len(mot)>0:
+def possible(valeur1,valeur2,w):
+    r=False
+    for key, value in w.iteritems():   # iter on both keys and values
+        if key.startswith(valeur1+valeur2):
+            r=True
+            break
+    if r:
+        if valeur1+valeur2 in w:
             MOT=valeur1+valeur2
             return [True,len(MOT),MOT]
         return [True,0,valeur1+valeur2]
     else:
         return [False,0,'']
         
-def run(tuple,connexion):
+def run(tuple,words):
     
-    problem=LettresProblem(tuple,connexion)
+    problem=LettresProblem(tuple,words)
     #example of bfs search
     debut=time.time()
     node=breadth_first_graph_search(problem)
@@ -71,14 +71,14 @@ def run(tuple,connexion):
     fin=time.time()
     print fin-debut
     print problem.symetrie
-    problem.conn.commit()
-    problem.c.close()
     return resultat
     
     
-if __name__ == "__main__":    
-    tuple=('v','o','e','u','n','b','e','t','l')
-    connexion = sqlite3.connect('dico.db')
-    v=run(tuple,connexion)
+if __name__ == "__main__":
+    with open('DICO', 'rb') as fichier:
+        mon_depickler = pickle.Unpickler(fichier)
+        words = mon_depickler.load()    
+    tuple=('r','e','q','u','i','n','s','a')
+    v=run(tuple,words)
     print v
     
