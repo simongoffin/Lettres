@@ -34,6 +34,7 @@ class LettresProblem(Problem):
             for valeur2 in temp:
                 if len(valeur2)==1:
                     check=possible(valeur1,valeur2,self.c)
+                    self.symetrie+=1
                     if check[0] and not check[2] in self.dico:
                         self.dico[valeur1+valeur2]=1
                         newmove=temp[:]
@@ -50,7 +51,7 @@ def possible(valeur1,valeur2,c):
     c.execute("SELECT * FROM Mots where Mot like "+"\'"+valeur1+valeur2+"%"+"\'"+";")
     r=c.fetchall()
     if len(r)>0:
-        c.execute("SELECT * FROM Mots where Mot like "+"\'"+valeur1+valeur2+"_"+"\'"+";")
+        c.execute("SELECT * FROM Mots where Mot like "+"\'"+valeur1+valeur2+"\'"+";")
         mot=c.fetchall()
         if len(mot)>0:
             MOT=valeur1+valeur2
@@ -68,13 +69,14 @@ def run(tuple,connexion):
     resultat=problem.solution
     fin=time.time()
     print fin-debut
+    print problem.symetrie
     problem.conn.commit()
     problem.c.close()
     return resultat
     
     
 if __name__ == "__main__":    
-    tuple=('s','i','n','g','e','z')
+    tuple=('r','e','q','u','i','n')
     connexion = sqlite3.connect('dico.db')
     v=run(tuple,connexion)
     print v
